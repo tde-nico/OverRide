@@ -1,0 +1,20 @@
+as we can see the code make a xor between a cypher and th number obtained
+by "322424827 - input" if it is below 22 so we can try to xor the first
+char of each string:
+
+>>> ord('Q') ^ ord('C') 
+18
+
+so we can obtain the password:
+>>> 322424845 - 18 
+322424827
+
+
+
+level03@OverRide:~$ ./level03
+***********************************
+*               level03         **
+***********************************
+Password:322424827
+$ cat /home/users/level04/.pass
+kgv3tkEb9h2mLkRsPkXRfc2mHbjMxQzvb2FrgKkf
