@@ -1,0 +1,17 @@
+we can see that the srign given as an input is hashed in the auth function
+we can simply rewrite the code to see the output
+
+for "test123" the serial is 6231207
+
+level06@OverRide:~$ ./level06
+***********************************
+*               level06           *
+***********************************
+-> Enter Login: test123
+***********************************
+***** NEW ACCOUNT DETECTED ********
+***********************************
+-> Enter Serial: 6231207
+Authenticated!
+$ cat /home/users/level07/.pass
+GbcPDRgsFK77LNnnuh7QyFYA2942Gp8yKj9KrWD8
